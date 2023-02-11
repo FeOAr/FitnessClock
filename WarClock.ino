@@ -77,7 +77,7 @@ void setup() {
   RGB_Init(20);
   pinMode(KEY_update, INPUT);
   pinMode(KEY_rst, INPUT);
-  RGB_turnOn(0, 0, 255);
+  RGB_turnOn(0, 0, 0);
 
   rtc.init();  // 时钟初始化
   u8g2.begin();
@@ -131,7 +131,7 @@ void loop() {
     if (!digitalRead(KEY_update)) {
       RGB_turnOn(0, 255, 0);
       getNetTime();
-      RGB_turnOn(0, 0, 255);
+      RGB_turnOn(0, 0, 0);
     }
   }
   if (!digitalRead(KEY_rst)) {
@@ -141,7 +141,7 @@ void loop() {
       delay(100);
       returnZero();
       delay(100);
-      RGB_turnOn(0, 0, 255);
+      RGB_turnOn(0, 0, 0);
     }
   }
 
@@ -150,14 +150,14 @@ void loop() {
   }
 
   if (xSemaphoreTake(timerSemaphore, 0) == pdTRUE) {
-    RGB_turnOn(255, 255, 0);
+    RGB_turnOn(255, 255, 255);
     String temp;
     getWC(temp);
     writeFile(SPIFFS, "/wctime.txt", temp.c_str());
     getNow(temp);
     writeFile(SPIFFS, "/nowtime.txt", temp.c_str());
     delay(100);
-    RGB_turnOn(0, 0, 255);
+    RGB_turnOn(0, 0, 0);
   }
   refreshtime();  // 每秒刷新一次字符串时间
   show(now);      // oled输出
