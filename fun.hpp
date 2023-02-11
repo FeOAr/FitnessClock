@@ -62,3 +62,8 @@ void refreshtime() {
     }
   }
 }
+
+void getNow(String &out){
+  out = "";
+  out = now.hour + String("@") + now.minute + String("@") + now.second + String("@") + now.day + String("@");
+}

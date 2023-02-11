@@ -54,7 +54,7 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   u8g2.setCursor(95, 14);
   u8g2.println(WeekDays[timeinfo.dow - 1]);
   /*-------------时间----------------*/
-  u8g2.setFont(u8g2_font_helvR14_tf);
+  u8g2.setFont(u8g2_font_crox5h_tf);
   u8g2.setCursor(0, 38);
   u8g2.print(timeinfo.hour);
   u8g2.printf(":%02d", timeinfo.minute);
@@ -106,9 +106,11 @@ void setup() {
     Serial.println("Card Mount Failed");
     return;
   }
-  String temp;
-  readFile(SPIFFS, "/wctime.txt", temp);
-  updateWC(temp);
+  String wctime;
+  readFile(SPIFFS, "/wctime.txt", wctime);
+  String nowtime;
+  readFile(SPIFFS, "/nowtime.txt", nowtime);
+  updateWC(wctime, nowtime);
   // 设置初始时间
   // Ds1302::DateTime dt = {
   //   .year = 23,
@@ -152,6 +154,8 @@ void loop() {
     String temp;
     getWC(temp);
     writeFile(SPIFFS, "/wctime.txt", temp.c_str());
+    getNow(temp);
+    writeFile(SPIFFS, "/nowtime.txt", temp.c_str());
     delay(100);
     RGB_turnOn(0, 0, 255);
   }
