@@ -29,7 +29,7 @@ const char *WeekDays[] = {
   "Fri",
   "Sat",
   "Sun"
-};  // 根据枚举类型输出星期
+};  // 输出星期
 hw_timer_t *timer = NULL;
 volatile SemaphoreHandle_t timerSemaphore;
 
@@ -73,7 +73,7 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
 }
 
 void setup() {
-  Serial.begin(115200);
+  // Serial.begin(115200);
   RGB_Init(20);
   pinMode(KEY_update, INPUT);
   pinMode(KEY_rst, INPUT);
@@ -108,9 +108,9 @@ void setup() {
   }
   String wctime;
   readFile(SPIFFS, "/wctime.txt", wctime);
-  String nowtime;
-  readFile(SPIFFS, "/nowtime.txt", nowtime);
-  updateWC(wctime, nowtime);
+  updateWC(wctime);
+
+  // updateWC(wctime, nowtime);
   // 设置初始时间
   // Ds1302::DateTime dt = {
   //   .year = 23,
@@ -154,8 +154,6 @@ void loop() {
     String temp;
     getWC(temp);
     writeFile(SPIFFS, "/wctime.txt", temp.c_str());
-    getNow(temp);
-    writeFile(SPIFFS, "/nowtime.txt", temp.c_str());
     delay(100);
     RGB_turnOn(0, 0, 0);
   }
