@@ -3,14 +3,14 @@
 
 ---
 
-![image-20230211144409644](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302111444997.png)
+![20230224_202724](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302242204385.jpg)
 
+> 有掉电走时，所以通电设置好后就可以拔了。
 
+按键左，右分别是 “联网对时”，“计时器清零”。
 
-> 有掉电走时，所以通电设置好后就可以拔了，需要数组再上电。
-
-按键从左到右分别是 “联网对时”，“计时器清零”，“Boot”，“Reset”。
+==P.S.== 如果发现计时器有问题，失效。那大概率是文件系统的初始化有问题，建议先刷如示例里的 “SPIFFS” 示例，初始化一下。
 
 如果需要硬件，可以看立创开源项目。
 
-[立创链接](https://oshwhub.com/feoar/warclock_esp32_v3)
+[立创链接](https://oshwhub.com/feoar/wc_v4)
