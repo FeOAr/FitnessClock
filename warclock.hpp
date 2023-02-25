@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include "WString.h"
 #include <Arduino.h>
 #include <Ds1302.h>
@@ -54,11 +55,15 @@ void showWarClock() {
     tempTimeVal[1] = now.minute - wcMin;
     tempTimeVal[2] = now.hour - wcHour;
     tempTimeVal[3] = now.day - wcday;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
       if (tempTimeVal[i] < 0) {
-        tempTimeVal[i] += 60;
+        tempTimeVal[i] += 60;  //分 秒
         tempTimeVal[i + 1]--;
       }
+    }
+    if(tempTimeVal[2]<0){
+      tempTimeVal[2] += 24; //时
+      tempTimeVal[3]--;
     }
   }
   u8g2.setFont(u8g2_font_helvR14_tf);

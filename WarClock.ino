@@ -10,10 +10,10 @@
 #define KEY_update 26
 #define KEY_rst 27
 #define NUMPIXELS 1
-#define PIN_NEOPIXEL 13
+#define PIN_NEOPIXEL 13 
 
 Ds1302 rtc(17, 22, 21);                                                                     // DS1302时钟实例
-U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/5, /* dc=*/16, /* reset=*/4);  //显示对象
+U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/5, /* dc=*/16, /* reset=*/4);  //显示对象
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 const char *ssid = "K2P_4A_2.4GHZ";         // wifi nane
 const char *password = "19491001newChina";  // wifi password
@@ -102,7 +102,7 @@ void setup() {
   timerAlarmEnable(timer);
 
   /*-------文件读写部分-------*/
-  if (!SPIFFS.begin()) {
+  if (!SPIFFS.begin(1)) {
     Serial.println("Card Mount Failed");
     return;
   }
