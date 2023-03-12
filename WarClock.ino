@@ -42,6 +42,7 @@ void ARDUINO_ISR_ATTR onTimer() {
 
 void show(Ds1302::DateTime timeinfo)  // 屏幕布局
 {
+  now = timeinfo;
   u8g2.clearBuffer();
   /*--------------war clock---------------*/
   showWarClock();
@@ -52,7 +53,7 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   /*-------------周----------------*/
   // u8g2.setFont(u8g2_font_7x13_mf);
   u8g2.setCursor(94, 14);
-  u8g2.println(WeekDays[timeinfo.dow-1]);
+  u8g2.println(WeekDays[timeinfo.dow - 1]);
   /*-------------时间----------------*/
   u8g2.setFont(u8g2_font_crox5h_tf);
   u8g2.setCursor(0, 38);
@@ -97,7 +98,6 @@ void setup() {
     u8g2.drawGlyph(105, 35, 0x53);
     u8g2.sendBuffer();
   }
-
   /*-------定时器部分-------*/
   timerSemaphore = xSemaphoreCreateBinary();
   timer = timerBegin(0, 80, true);
@@ -111,19 +111,20 @@ void setup() {
   }
   String wctime;
   readFile(SPIFFS, "/wcsave.txt", wctime);
+  Serial.printf("<wctime> %s\n", wctime);
   updateWC(wctime);
 
   // 设置ds1302初始时间
-  Ds1302::DateTime dt = {
-    .year = 24,
-    .month = Ds1302::MONTH_JAN,
-    .day = 17,
-    .hour = 12,
-    .minute = 27,
-    .second = 30,
-    .dow = Ds1302::DOW_SUN
-  };
-  rtc.setDateTime(&dt);
+  // Ds1302::DateTime dt = {
+  //   .year = 24,
+  //   .month = Ds1302::MONTH_JAN,
+  //   .day = 17,
+  //   .hour = 12,
+  //   .minute = 27,
+  //   .second = 30,
+  //   .dow = Ds1302::DOW_SUN
+  // };
+  // rtc.setDateTime(&dt);
 }
 
 void loop() {
@@ -156,6 +157,7 @@ void loop() {
     RGB_turnOn(255, 255, 255);
     String temp;
     getWC(temp);
+    Serial.printf("<temp> %s\n", temp);
     writeFile(SPIFFS, "/wcsave.txt", temp.c_str());
     delay(100);
     RGB_turnOn(0, 0, 0);
