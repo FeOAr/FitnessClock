@@ -10,25 +10,25 @@
 #define KEY_update 26
 #define KEY_rst 27
 #define NUMPIXELS 1
-#define PIN_NEOPIXEL 13 
+#define PIN_NEOPIXEL 13
 
 Ds1302 rtc(17, 22, 21);                                                                     // DS1302时钟实例
 U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/5, /* dc=*/16, /* reset=*/4);  //显示对象
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
-const char *ssid = "K2P_4A_2.4GHZ";         // wifi nane
+const char *ssid = "K2P4A24GHZ";            // wifi nane
 const char *password = "19491001newChina";  // wifi password
 Ds1302::DateTime now;                       // 当前时间对象
 String myDate = "20";                       // 年份字符串首部，uint8_t存超过255会溢出
 String mytime;                              // 时间字符串
 bool wifiConnect = true;
 const char *WeekDays[] = {
+  "Sun",
   "Mon",
   "Tue",
   "Wed",
   "Thur",
   "Fri",
-  "Sat",
-  "Sun"
+  "Sat"
 };  // 输出星期
 hw_timer_t *timer = NULL;
 volatile SemaphoreHandle_t timerSemaphore;
@@ -51,8 +51,8 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   u8g2.printf("20%d-%02d-%02d", timeinfo.year, timeinfo.month, timeinfo.day);
   /*-------------周----------------*/
   // u8g2.setFont(u8g2_font_7x13_mf);
-  u8g2.setCursor(95, 14);
-  u8g2.println(WeekDays[timeinfo.dow - 1]);
+  u8g2.setCursor(94, 14);
+  u8g2.println(WeekDays[timeinfo.dow-1]);
   /*-------------时间----------------*/
   u8g2.setFont(u8g2_font_crox5h_tf);
   u8g2.setCursor(0, 38);
@@ -73,7 +73,7 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
 }
 
 void setup() {
-  // Serial.begin(115200);
+  Serial.begin(115200);
   RGB_Init(20);
   pinMode(KEY_update, INPUT);
   pinMode(KEY_rst, INPUT);
@@ -82,6 +82,9 @@ void setup() {
   rtc.init();  // 时钟初始化
   u8g2.begin();
   u8g2.enableUTF8Print();
+
+  sntp_servermode_dhcp(1);  // (optional)
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2);
 
   WiFi.begin(ssid, password);  // 开启wifi
   while (WiFi.status() != WL_CONNECTED) {
@@ -94,38 +97,38 @@ void setup() {
     u8g2.drawGlyph(105, 35, 0x53);
     u8g2.sendBuffer();
   }
+
   /*-------定时器部分-------*/
   timerSemaphore = xSemaphoreCreateBinary();
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &onTimer, true);
   timerAlarmWrite(timer, 10000000, true);
   timerAlarmEnable(timer);
-
   /*-------文件读写部分-------*/
   if (!SPIFFS.begin(1)) {
     Serial.println("Card Mount Failed");
     return;
   }
   String wctime;
-  readFile(SPIFFS, "/wctime.txt", wctime);
+  readFile(SPIFFS, "/wcsave.txt", wctime);
   updateWC(wctime);
 
-  // updateWC(wctime, nowtime);
-  // 设置初始时间
-  // Ds1302::DateTime dt = {
-  //   .year = 23,
-  //   .month = Ds1302::MONTH_JAN,
-  //   .day = 15,
-  //   .hour = 22,
-  //   .minute = 25,
-  //   .second = 30,
-  //   .dow = Ds1302::DOW_SUN
-  // };
-  // rtc.setDateTime(&dt);
+  // 设置ds1302初始时间
+  Ds1302::DateTime dt = {
+    .year = 24,
+    .month = Ds1302::MONTH_JAN,
+    .day = 17,
+    .hour = 12,
+    .minute = 27,
+    .second = 30,
+    .dow = Ds1302::DOW_SUN
+  };
+  rtc.setDateTime(&dt);
 }
 
 void loop() {
   // 按键联网对时
+  //  Serial.println("here");
   if (!digitalRead(KEY_update)) {
     delayMicroseconds(10);
     if (!digitalRead(KEY_update)) {
@@ -153,7 +156,7 @@ void loop() {
     RGB_turnOn(255, 255, 255);
     String temp;
     getWC(temp);
-    writeFile(SPIFFS, "/wctime.txt", temp.c_str());
+    writeFile(SPIFFS, "/wcsave.txt", temp.c_str());
     delay(100);
     RGB_turnOn(0, 0, 0);
   }

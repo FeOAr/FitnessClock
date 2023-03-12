@@ -8,7 +8,10 @@ extern U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2;
 extern Ds1302::DateTime now;
 Ds1302::DateTime wcTimeStamp;
 static uint8_t oldSecond = 0;
-int wcHour, wcMin, wcSec, wcday;
+int wcHour = now.hour;
+int wcMin = now.minute;
+int wcSec = now.second;
+int wcday = now.day;
 int tempTimeVal[4];  //wc的结果数组
 
 void str2array(String &input, int strRecv[4]) {
@@ -61,8 +64,8 @@ void showWarClock() {
         tempTimeVal[i + 1]--;
       }
     }
-    if(tempTimeVal[2]<0){
-      tempTimeVal[2] += 24; //时
+    if (tempTimeVal[2] < 0) {
+      tempTimeVal[2] += 24;  //时
       tempTimeVal[3]--;
     }
   }
