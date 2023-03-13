@@ -3,7 +3,9 @@
 
 ---
 
-![20230224_202724](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302242204385.jpg)
+![20230313_173014](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202303131730703.jpg)
+
+
 
 > 有掉电走时，所以通电设置好后就可以拔了。
 
