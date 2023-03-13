@@ -2,11 +2,13 @@
 #include <Ds1302.h>
 #include <U8g2lib.h>
 #include <SPI.h>
+#include <Wire.h>
 #include "nettime.hpp"
 #include "fun.hpp"
 #include "warclock.hpp"
 #include "ws2812.hpp"
 #include "save2file.hpp"
+#include "TheBme280.hpp"
 #define KEY_update 26
 #define KEY_rst 27
 #define NUMPIXELS 1
@@ -20,6 +22,10 @@ const char *password = "19491001newChina";  // wifi password
 Ds1302::DateTime now;                       // 当前时间对象
 String myDate = "20";                       // 年份字符串首部，uint8_t存超过255会溢出
 String mytime;                              // 时间字符串
+float temperature = 0;
+float presure = 0;
+float altitude = 0;
+float humidity = 0;
 bool wifiConnect = true;
 const char *WeekDays[] = {
   "Sun",
@@ -31,6 +37,8 @@ const char *WeekDays[] = {
   "Sat"
 };  // 输出星期
 hw_timer_t *timer = NULL;
+extern void bme280_Init();
+extern void bme280_GetVal();
 volatile SemaphoreHandle_t timerSemaphore;
 
 volatile uint32_t isrCounter = 0;
@@ -55,8 +63,8 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   u8g2.setCursor(94, 14);
   u8g2.println(WeekDays[timeinfo.dow - 1]);
   /*-------------时间----------------*/
-  u8g2.setFont(u8g2_font_crox5h_tf);
-  u8g2.setCursor(0, 38);
+  u8g2.setFont(u8g2_font_helvR14_tf);
+  u8g2.setCursor(0, 30);
   u8g2.print(timeinfo.hour);
   u8g2.printf(":%02d", timeinfo.minute);
   u8g2.printf(":%02d", timeinfo.second);
@@ -64,11 +72,16 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   /*https://github.com/olikraus/u8g2/wiki/fntgrpiconic#open_iconic_arrow_1x*/
   u8g2.setFont(u8g2_font_open_iconic_www_2x_t);
   if (wifiConnect) {
-    u8g2.drawGlyph(105, 35, 0x51);
+    u8g2.drawGlyph(108, 40, 0x51);
   } else {
-    u8g2.drawGlyph(105, 35, 0x45);
+    u8g2.drawGlyph(108, 40, 0x45);
   }
-  /*-----------------------------*/
+  /*-------------气温-------------*/
+  u8g2.setFont(u8g2_font_ncenR08_tf);
+  u8g2.setCursor(0, 60);
+  u8g2.printf("%.2f°C, %.2f%c, %.2fhPa", temperature, humidity, 0x25, presure);
+  u8g2.setCursor(80, 50);
+  u8g2.printf("%.2f m", altitude);
   u8g2.sendBuffer();
   delay(50);
 }
@@ -111,7 +124,7 @@ void setup() {
   }
   String wctime;
   readFile(SPIFFS, "/wcsave.txt", wctime);
-  Serial.printf("<wctime> %s\n", wctime);
+  // Serial.printf("<wctime> %s\n", wctime);
   updateWC(wctime);
 
   // 设置ds1302初始时间
@@ -125,6 +138,8 @@ void setup() {
   //   .dow = Ds1302::DOW_SUN
   // };
   // rtc.setDateTime(&dt);
+
+  bme280_Init();
 }
 
 void loop() {
@@ -157,9 +172,14 @@ void loop() {
     RGB_turnOn(255, 255, 255);
     String temp;
     getWC(temp);
-    Serial.printf("<temp> %s\n", temp);
+    // Serial.printf("<temp> %s\n", temp);
     writeFile(SPIFFS, "/wcsave.txt", temp.c_str());
-    delay(100);
+    bme280_GetVal();
+    temperature = bme.readTemperature();
+    presure = bme.readPressure() / 100.0F;
+    altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
+    humidity = bme.readHumidity();
+    // delay(100);
     RGB_turnOn(0, 0, 0);
   }
   refreshtime();  // 每秒刷新一次字符串时间

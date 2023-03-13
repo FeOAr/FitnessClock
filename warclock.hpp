@@ -70,12 +70,12 @@ void showWarClock() {
     }
   }
   u8g2.setFont(u8g2_font_helvR14_tf);
-  u8g2.setCursor(12, 60);
+  u8g2.setCursor(0, 47);
   /*---------------------------*/
   u8g2.printf("%02d:%02d:%02d", tempTimeVal[2], tempTimeVal[1], tempTimeVal[0]);
   /*---------------------------*/
   u8g2.setFont(u8g2_font_logisoso18_tf);
-  u8g2.setCursor(101, 60);
+  u8g2.setCursor(77, 38);
   u8g2.printf("%02d", tempTimeVal[3]);
-  u8g2.drawRFrame(99, 39, 27, 24, 4);
+  u8g2.drawRFrame(75, 16, 27, 24, 4);
 }
