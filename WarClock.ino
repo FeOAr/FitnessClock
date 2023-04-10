@@ -34,6 +34,7 @@ bool wifiConnect = true;
 uint8_t invertS = 0xa7;
 bool invertSF = false;
 bool powersave = false;
+bool rotateS = false;
 const char *WeekDays[] = {
   "Sun",
   "Mon",
@@ -62,6 +63,10 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   u8g2.setContrast(100);
   u8g2.setPowerSave(powersave);
   u8g2.sendF("c", invertS);
+  if (rotateS)
+    u8g2.setDisplayRotation(U8G2_R0);
+  else
+    u8g2.setDisplayRotation(U8G2_R2);
   /*--------------war clock---------------*/
   showWarClock();
   /*-------------日期----------------*/
@@ -154,6 +159,7 @@ void setup() {
   // link the button 1 functions.
   button1.attachClick(updateTime);
   button1.attachDoubleClick(invertScreen);
+  button1.attachLongPressStart(rotateScreen);
 
   // link the button 2 functions.
   button2.attachClick(timeRst);
@@ -199,6 +205,9 @@ void invertScreen() {
     invertS = 0xa6;
   }
   invertSF = !invertSF;
+}
+void rotateScreen() {
+  rotateS = !rotateS;
 }
 void timeRst() {
   RGB_turnOn(255, 0, 0);
