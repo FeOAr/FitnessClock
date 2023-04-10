@@ -9,10 +9,14 @@
 #include "ws2812.hpp"
 #include "save2file.hpp"
 #include "TheBme280.hpp"
+#include "OneButton.h"
 #define KEY_update 26
 #define KEY_rst 27
 #define NUMPIXELS 1
 #define PIN_NEOPIXEL 13
+
+OneButton button1(KEY_update, true);
+OneButton button2(KEY_rst, true);
 
 Ds1302 rtc(17, 22, 21);                                                                     // DS1302时钟实例
 U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/5, /* dc=*/16, /* reset=*/4);  //显示对象
@@ -27,6 +31,9 @@ float presure = 0;
 float altitude = 0;
 float humidity = 0;
 bool wifiConnect = true;
+uint8_t invertS = 0xa7;
+bool invertSF = false;
+bool powersave = false;
 const char *WeekDays[] = {
   "Sun",
   "Mon",
@@ -52,6 +59,9 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
 {
   now = timeinfo;
   u8g2.clearBuffer();
+  u8g2.setContrast(100);
+  u8g2.setPowerSave(powersave);
+  u8g2.sendF("c", invertS);
   /*--------------war clock---------------*/
   showWarClock();
   /*-------------日期----------------*/
@@ -78,10 +88,11 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   }
   /*-------------气温-------------*/
   u8g2.setFont(u8g2_font_ncenR08_tf);
-  u8g2.setCursor(0, 60);
+  u8g2.setCursor(1, 62);
   u8g2.printf("%.2f°C, %.2f%c, %.2fhPa", temperature, humidity, 0x25, presure);
-  u8g2.setCursor(80, 50);
+  u8g2.setCursor(80, 52);
   u8g2.printf("%.2f m", altitude);
+  u8g2.drawBox(0, 49, 75, 2);
   u8g2.sendBuffer();
   delay(50);
 }
@@ -135,34 +146,25 @@ void setup() {
   //   .hour = 12,
   //   .minute = 27,
   //   .second = 30,
-  //   .dow = Ds1302::DOW_SUN
+  //   .dow = Ds1302::DOW_SUN-
   // };
   // rtc.setDateTime(&dt);
 
   bme280_Init();
+  // link the button 1 functions.
+  button1.attachClick(updateTime);
+  button1.attachDoubleClick(invertScreen);
+
+  // link the button 2 functions.
+  button2.attachClick(timeRst);
+  button2.attachDoubleClick(powsave);
 }
 
 void loop() {
   // 按键联网对时
   //  Serial.println("here");
-  if (!digitalRead(KEY_update)) {
-    delayMicroseconds(10);
-    if (!digitalRead(KEY_update)) {
-      RGB_turnOn(0, 255, 0);
-      getNetTime();
-      RGB_turnOn(0, 0, 0);
-    }
-  }
-  if (!digitalRead(KEY_rst)) {
-    delayMicroseconds(10);
-    if (!digitalRead(KEY_rst)) {
-      RGB_turnOn(255, 0, 0);
-      delay(100);
-      returnZero();
-      delay(100);
-      RGB_turnOn(0, 0, 0);
-    }
-  }
+  button1.tick();
+  button2.tick();
 
   if (!WiFi.isConnected()) {
     wifiConnect = false;
@@ -184,4 +186,27 @@ void loop() {
   }
   refreshtime();  // 每秒刷新一次字符串时间
   show(now);      // oled输出
+}
+void updateTime() {
+  RGB_turnOn(0, 255, 0);
+  getNetTime();
+  RGB_turnOn(0, 0, 0);
+}
+void invertScreen() {
+  if (invertSF) {
+    invertS = 0xa7;
+  } else {
+    invertS = 0xa6;
+  }
+  invertSF = !invertSF;
+}
+void timeRst() {
+  RGB_turnOn(255, 0, 0);
+  delay(100);
+  returnZero();
+  delay(100);
+  RGB_turnOn(0, 0, 0);
+}
+void powsave() {
+  powersave = !powersave;
 }

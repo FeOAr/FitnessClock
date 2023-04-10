@@ -77,5 +77,6 @@ void showWarClock() {
   u8g2.setFont(u8g2_font_logisoso18_tf);
   u8g2.setCursor(77, 38);
   u8g2.printf("%02d", tempTimeVal[3]);
-  u8g2.drawRFrame(75, 16, 27, 24, 4);
+  u8g2.drawRFrame(75, 17, 27, 24, 4);
+  u8g2.drawRFrame(74, 16, 28, 25, 4);
 }
