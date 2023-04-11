@@ -31,10 +31,12 @@ float presure = 0;
 float altitude = 0;
 float humidity = 0;
 bool wifiConnect = true;
-uint8_t invertS = 0xa7;
-bool invertSF = false;
-bool powersave = false;
-bool rotateS = false;
+int brightness[6] = { 10, 50, 100, 150, 200, 255 };  //亮度值
+int bnPerb = 4;                                      //上边亮度数组的指针
+uint8_t invertS = 0xa7;                              //反色指令
+bool invertSF = false;                               //反色标志
+bool powersave = false;                              //节电标志
+bool rotateS = false;                                //旋转标志
 const char *WeekDays[] = {
   "Sun",
   "Mon",
@@ -60,7 +62,7 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
 {
   now = timeinfo;
   u8g2.clearBuffer();
-  u8g2.setContrast(100);
+  u8g2.setContrast(brightness[bnPerb]);
   u8g2.setPowerSave(powersave);
   u8g2.sendF("c", invertS);
   if (rotateS)
@@ -87,17 +89,22 @@ void show(Ds1302::DateTime timeinfo)  // 屏幕布局
   /*https://github.com/olikraus/u8g2/wiki/fntgrpiconic#open_iconic_arrow_1x*/
   u8g2.setFont(u8g2_font_open_iconic_www_2x_t);
   if (wifiConnect) {
-    u8g2.drawGlyph(108, 40, 0x51);
+    u8g2.drawGlyph(106, 33, 0x51);
   } else {
-    u8g2.drawGlyph(108, 40, 0x45);
+    u8g2.drawGlyph(106, 33, 0x45);
   }
   /*-------------气温-------------*/
   u8g2.setFont(u8g2_font_ncenR08_tf);
   u8g2.setCursor(1, 62);
   u8g2.printf("%.2f°C, %.2f%c, %.2fhPa", temperature, humidity, 0x25, presure);
-  u8g2.setCursor(80, 52);
+  u8g2.setCursor(82, 52);
   u8g2.printf("%.2f m", altitude);
   u8g2.drawBox(0, 49, 75, 2);
+  /*-------------亮度-------------*/
+  u8g2.setFont(u8g2_font_ncenR08_tf);
+  u8g2.setCursor(106, 43);
+  u8g2.printf("%d", brightness[bnPerb]);
+  /*----------------------------------*/
   u8g2.sendBuffer();
   delay(50);
 }
@@ -162,8 +169,9 @@ void setup() {
   button1.attachLongPressStart(rotateScreen);
 
   // link the button 2 functions.
-  button2.attachClick(timeRst);
-  button2.attachDoubleClick(powsave);
+  button2.attachClick(powsave);
+  button2.attachDoubleClick(changeBN);
+  button2.attachLongPressStart(timeRst);
 }
 
 void loop() {
@@ -218,4 +226,8 @@ void timeRst() {
 }
 void powsave() {
   powersave = !powersave;
+}
+void changeBN() {
+  bnPerb++;
+  bnPerb = bnPerb % 6;
 }
