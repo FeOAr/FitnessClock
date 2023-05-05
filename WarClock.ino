@@ -21,11 +21,11 @@ OneButton button2(KEY_rst, true);
 Ds1302 rtc(17, 22, 21);                                                                     // DS1302时钟实例
 U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/5, /* dc=*/16, /* reset=*/4);  //显示对象
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
-const char *ssid = "K2P4A24GHZ";            // wifi nane
-const char *password = "19491001newChina";  // wifi password
-Ds1302::DateTime now;                       // 当前时间对象
-String myDate = "20";                       // 年份字符串首部，uint8_t存超过255会溢出
-String mytime;                              // 时间字符串
+const char *ssid = "301-1";            // wifi nane
+const char *password = "15868495985";  // wifi password
+Ds1302::DateTime now;                  // 当前时间对象
+String myDate = "20";                  // 年份字符串首部，uint8_t存超过255会溢出
+String mytime;                         // 时间字符串
 float temperature = 0;
 float presure = 0;
 float altitude = 0;
@@ -37,6 +37,7 @@ uint8_t invertS = 0xa7;                              //反色指令
 bool invertSF = false;                               //反色标志
 bool powersave = false;                              //节电标志
 bool rotateS = false;                                //旋转标志
+int MaxConnectTimes = 10;                            //wifi的最大重新连接次数
 const char *WeekDays[] = {
   "Sun",
   "Mon",
@@ -124,6 +125,7 @@ void setup() {
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2);
 
   WiFi.begin(ssid, password);  // 开启wifi
+  int connectTimer = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(300);
     u8g2.clearBuffer();
@@ -133,6 +135,9 @@ void setup() {
     u8g2.setFont(u8g2_font_open_iconic_www_2x_t);
     u8g2.drawGlyph(105, 35, 0x53);
     u8g2.sendBuffer();
+    connectTimer++;
+    if (connectTimer > MaxConnectTimes)
+      break;
   }
   /*-------定时器部分-------*/
   timerSemaphore = xSemaphoreCreateBinary();
@@ -182,6 +187,8 @@ void loop() {
 
   if (!WiFi.isConnected()) {
     wifiConnect = false;
+  }else{
+    wifiConnect = true;
   }
 
   if (xSemaphoreTake(timerSemaphore, 0) == pdTRUE) {
@@ -202,6 +209,18 @@ void loop() {
   show(now);      // oled输出
 }
 void updateTime() {
+  if (!WiFi.isConnected()) {
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(300);
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_unifont_tr);
+      u8g2.setCursor(0, 14);
+      u8g2.println("WIFI connect...");
+      u8g2.setFont(u8g2_font_open_iconic_www_2x_t);
+      u8g2.drawGlyph(105, 35, 0x53);
+      u8g2.sendBuffer();
+    }
+  }
   RGB_turnOn(0, 255, 0);
   getNetTime();
   RGB_turnOn(0, 0, 0);
